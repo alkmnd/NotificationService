@@ -1,4 +1,4 @@
-package NotificationService
+package service
 
 import "github.com/google/uuid"
 

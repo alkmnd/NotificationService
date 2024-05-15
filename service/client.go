@@ -1,4 +1,4 @@
-package NotificationService
+package service
 
 import (
 	"encoding/json"

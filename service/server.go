@@ -1,6 +1,8 @@
-package NotificationService
+package service
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 type WsServer struct {
 	clients    map[*Client]bool
