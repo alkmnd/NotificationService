@@ -3,13 +3,12 @@ package service
 import (
 	"encoding/json"
 	"errors"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"log"
-	"time"
-
-	"github.com/google/uuid"
 	"net/http"
+	"time"
 )
 
 var upgrader = websocket.Upgrader{
@@ -20,8 +19,8 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 4096,
 }
 
+// Client The actual websocket connection.
 type Client struct {
-	// The actual websocket connection.
 	ID       uuid.UUID
 	conn     *websocket.Conn
 	wsServer *WsServer
@@ -172,7 +171,7 @@ func (client *Client) writePump() {
 			}
 			w.Write(message)
 
-			// Attach queued chat messages to the current websocket message.
+			// Attach queued messages to the current websocket message.
 			n := len(client.send)
 			for i := 0; i < n; i++ {
 				w.Write(newline)
@@ -191,21 +190,28 @@ func (client *Client) writePump() {
 	}
 }
 
+// handleNewMessage processes new message end sends message to the client.
 func (client *Client) handleNewMessage(jsonMessage []byte) {
 	var message Message
+	// Unmarshal message.
 	if err := json.Unmarshal(jsonMessage, &message); err != nil {
 		log.Printf("handleNewMessage error on unmarshal JSON message %s", err)
 		return
 	}
 
+	// Find reseiver by user id in the message.
 	receiver := client.wsServer.findClientByID(message.UserId)
 	if receiver == nil {
+		log.Printf("handleNewMessage  receiver is not found")
 		return
 	}
 
+	// Check api key.
 	if client.apiKey != client.wsServer.apiKey {
+		log.Printf("handleNewMessage wrong api key")
 		return
 	}
 
-	receiver.send <- []byte("Notification")
+	// Send message.
+	receiver.send <- []byte(Notification)
 }
