@@ -2,6 +2,7 @@ package main
 
 import (
 	"NotificationService/service"
+	"github.com/spf13/viper"
 	"net/http"
 	"os"
 	"sync"
@@ -26,9 +27,15 @@ func main() {
 		http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 			service.ServeWs(wsServer, w, r)
 		})
-		http.ListenAndServe(":8081", nil)
+		http.ListenAndServe(viper.GetString("port"), nil)
 	}()
 
 	wg.Wait()
 
+}
+
+func initConfig() error {
+	viper.AddConfigPath("configs")
+	viper.SetConfigName("config")
+	return viper.ReadInConfig()
 }
